@@ -1,5 +1,6 @@
 (async () => {
     var [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    var windowId = tab.windowId;
 
     var [{ result: selection }] = await chrome.scripting.executeScript({
         target: { tabId: tab.id },
@@ -8,26 +9,26 @@
         }
     });
 
-    if (selection != "" && typeof (selection) != 'undefined') {
-        window.open("https://www.youtube.com/results?search_query=" + selection);
+    if (selection != "" && typeof selection != 'undefined') {
+        chrome.tabs.create({ url: `https://www.youtube.com/results?search_query=${selection}`, windowId: windowId });
     } else {
-        document.querySelector('#searchBtn').addEventListener('click', searchBySearchQuery);
+        document.querySelector('#searchBtn').addEventListener('click', () => { searchBySearchQuery(windowId); });
         document.addEventListener('keypress', function (event) {
             if (event.key === 'Enter') {
-                searchBySearchQuery();
+                searchBySearchQuery(windowId);
             }
         });
     }
 })();
 
-const searchBySearchQuery = () => {
+const searchBySearchQuery = (windowId) => {
     var query = document.querySelector('#searchQuery').value;
 
     // Open "Watch later" playlist if search is empty
-    if (query == '') {
-        window.open("https://www.youtube.com/playlist?list=WL");
+    if (query === '') {
+        chrome.tabs.create({ url: "https://www.youtube.com/playlist?list=WL", windowId: windowId });
     } else {
-        window.open("https://www.youtube.com/results?search_query=${query}");
+        chrome.tabs.create({ url: `https://www.youtube.com/results?search_query=${query}`, windowId: windowId });
     }
 };
 
