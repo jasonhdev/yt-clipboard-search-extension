@@ -25,13 +25,11 @@
             var searchTerm = document.querySelector('#searchQuery').value;
 
             if (searchTerm.length >= 3) {
-                const res = fetch(`http://suggestqueries.google.com/complete/search?client=youtube&ds=yt&h1=en&q=${searchTerm}`)
-                    .then((res) => res.text())
-                    .then((data) => suggestionCallback(data))
-                    .then((suggestions) => {
-                        $("#searchQuery").autocomplete({ source: suggestions });
-                        $('html').addClass('expanded');
-                    })
+                var suggestionsPromise = fetchSuggestions(searchTerm);
+                suggestionsPromise.then(suggestions => {
+                    $("#searchQuery").autocomplete({ source: suggestions });
+                    $('html').addClass('expanded');
+                });
             }
             else {
                 $('html').removeClass('expanded');
@@ -40,17 +38,23 @@
     }
 })();
 
-const suggestionCallback = (data) => {
+const fetchSuggestions = (searchTerm) => {
     var suggestions = [];
 
-    data = JSON.parse(data.replace("window.google.ac.h(", "").slice(0, -1))[1];
-    data.forEach(function (val) {
-        suggestions.push(val[0]);
-    });
+    const res = fetch(`http://suggestqueries.google.com/complete/search?client=youtube&ds=yt&h1=en&q=${searchTerm}`)
+        .then((res) => res.text())
+        .then((resText) => {
+            data = JSON.parse(resText.replace("window.google.ac.h(", "").slice(0, -1))[1];
+            data.forEach(function (val) {
+                suggestions.push(val[0]);
+            });
 
-    suggestions.length = 5;
+            suggestions.length = 5;
+            
+            return suggestions;
+        });
 
-    return suggestions;
+    return res;
 };
 
 const searchBySearchQuery = (windowId) => {
