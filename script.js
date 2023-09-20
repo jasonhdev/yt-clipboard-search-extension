@@ -2,6 +2,7 @@
     var [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     var windowId = tab.windowId;
 
+    // Check for highlighted text on current window
     var [{ result: selection }] = await chrome.scripting.executeScript({
         target: { tabId: tab.id },
         function: function () {
@@ -9,6 +10,7 @@
         }
     });
 
+    // If none highlighted, open up search input box
     if (selection != "" && typeof selection != 'undefined') {
         chrome.tabs.create({ url: `https://www.youtube.com/results?search_query=${selection}`, windowId: windowId });
     } else {
@@ -19,6 +21,7 @@
             }
         });
 
+        // Initialize autocomplete, to display search suggestions
         $("#searchQuery").autocomplete();
 
         document.addEventListener('input', function () {
@@ -50,7 +53,7 @@ const fetchSuggestions = (searchTerm) => {
             });
 
             suggestions.length = 5;
-            
+
             return suggestions;
         });
 
