@@ -22,21 +22,27 @@
         });
 
         // Initialize autocomplete, to display search suggestions
-        $("#searchQuery").autocomplete();
+        $("#searchQuery").autocomplete({
+            open: function () {
+                $('html').addClass('expanded');
+            },
+            close: function () {
+                $('html').removeClass('expanded');
+            },
+            select: function () {
+                searchBySearchQuery(windowId);
+            }
+        });
 
         document.addEventListener('input', function () {
             var searchTerm = document.querySelector('#searchQuery').value;
 
-            if (searchTerm.length >= 3) {
-                var suggestionsPromise = fetchSuggestions(searchTerm);
-                suggestionsPromise.then(suggestions => {
-                    $("#searchQuery").autocomplete({ source: suggestions });
-                    $('html').addClass('expanded');
+            var suggestionsPromise = fetchSuggestions(searchTerm);
+            suggestionsPromise.then(suggestions => {
+                $("#searchQuery").autocomplete({
+                    source: suggestions
                 });
-            }
-            else {
-                $('html').removeClass('expanded');
-            }
+            });
         });
     }
 })();
