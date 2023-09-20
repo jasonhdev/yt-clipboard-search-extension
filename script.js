@@ -18,8 +18,40 @@
                 searchBySearchQuery(windowId);
             }
         });
+
+        $("#searchQuery").autocomplete();
+
+        document.addEventListener('input', function () {
+            var searchTerm = document.querySelector('#searchQuery').value;
+
+            if (searchTerm.length >= 3) {
+                const res = fetch(`http://suggestqueries.google.com/complete/search?client=youtube&ds=yt&h1=en&q=${searchTerm}`)
+                    .then((res) => res.text())
+                    .then((data) => suggestionCallback(data))
+                    .then((suggestions) => {
+                        $("#searchQuery").autocomplete({ source: suggestions });
+                        $('html').addClass('expanded');
+                    })
+            }
+            else {
+                $('html').removeClass('expanded');
+            }
+        });
     }
 })();
+
+const suggestionCallback = (data) => {
+    var suggestions = [];
+
+    data = JSON.parse(data.replace("window.google.ac.h(", "").slice(0, -1))[1];
+    data.forEach(function (val) {
+        suggestions.push(val[0]);
+    });
+
+    suggestions.length = 5;
+
+    return suggestions;
+};
 
 const searchBySearchQuery = (windowId) => {
     var query = document.querySelector('#searchQuery').value;
@@ -31,6 +63,3 @@ const searchBySearchQuery = (windowId) => {
         chrome.tabs.create({ url: `https://www.youtube.com/results?search_query=${query}`, windowId: windowId });
     }
 };
-
-
-
