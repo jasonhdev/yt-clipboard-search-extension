@@ -54,11 +54,22 @@ const fetchSuggestions = (searchTerm) => {
         .then((res) => res.text())
         .then((resText) => {
             data = JSON.parse(resText.replace("window.google.ac.h(", "").slice(0, -1))[1];
-            data.forEach(function (val) {
-                suggestions.push(val[0]);
+
+            for (let i = 0; i < 5; i++) {
+                suggestions.push(data[i][0]);
+            }
+
+            let tooLongCount = 0;
+            suggestions.forEach(function (suggestion) {
+                if (suggestion.length >= 30) {
+                    tooLongCount++;
+                    console.log("toolong! (" + suggestion.length + ") - " + suggestion );
+                }
             });
 
-            suggestions.length = 5;
+            if (suggestions.length) {
+                suggestions.length = suggestions.length - tooLongCount;
+            }
 
             return suggestions;
         });
