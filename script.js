@@ -2,13 +2,18 @@
     var [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     var windowId = tab.windowId;
 
-    // Check for highlighted text on current window
-    var [{ result: selection }] = await chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        function: function () {
-            return window.getSelection().toString();
-        }
-    });
+    // Don't execute script on disallowed chrome pages
+    if (tab.url.startsWith("chrome://")) {
+        selection = "";
+    } else {
+        // Check for highlighted text on current window
+        var [{ result: selection }] = await chrome.scripting.executeScript({
+            target: { tabId: tab.id },
+            function: function () {
+                return window.getSelection().toString();
+            }
+        });
+    }
 
     // If none highlighted, open up search input box
     if (selection != "" && typeof selection != 'undefined') {
@@ -63,7 +68,7 @@ const fetchSuggestions = (searchTerm) => {
             suggestions.forEach(function (suggestion) {
                 if (suggestion.length >= 30) {
                     tooLongCount++;
-                    console.log("toolong! (" + suggestion.length + ") - " + suggestion );
+                    console.log("toolong! (" + suggestion.length + ") - " + suggestion);
                 }
             });
 
