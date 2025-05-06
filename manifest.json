@@ -22,7 +22,7 @@
                 "<all_urls>"
             ],
             "js": [
-                "script.js"
+                "popup.js"
             ]
         }
     ]
