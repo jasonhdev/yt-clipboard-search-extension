@@ -1,19 +1,18 @@
 (async () => {
-    var [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    var windowId = tab.windowId;
+    if (chrome.tabs) {
+        var [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        var windowId = tab.windowId;
+    }
 
     // Don't execute script on disallowed chrome pages
-    if (tab.url.startsWith("chrome://")) {
-        selection = "";
-    } else {
-        // Check for highlighted text on current window
-        var [{ result: selection }] = await chrome.scripting.executeScript({
-            target: { tabId: tab.id },
-            function: function () {
-                return window.getSelection().toString();
-            }
-        });
+    if (!tab || tab.url.startsWith("chrome") || tab.url.startsWith("https://chrome")) {
+        return;
     }
+
+    var [{ result: selection }] = await chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        function: () => window.getSelection().toString()
+    });
 
     // If none highlighted, open up search input box
     if (selection != "" && typeof selection != 'undefined') {
@@ -60,8 +59,10 @@ const fetchSuggestions = (searchTerm) => {
         .then((resText) => {
             data = JSON.parse(resText.replace("window.google.ac.h(", "").slice(0, -1))[1];
 
-            for (let i = 0; i < 5; i++) {
-                suggestions.push(data[i][0]);
+            for (let i = 0; i < Math.min(5, data.length); i++) {
+                if (Array.isArray(data[i]) && data[i].length > 0) {
+                    suggestions.push(data[i][0]);
+                }
             }
 
             let tooLongCount = 0;
