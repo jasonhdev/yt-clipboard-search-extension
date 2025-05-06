@@ -34,8 +34,8 @@
 
     // Initialize autocomplete UI
     $("#searchQuery").autocomplete({
-        open: () => $('html').addClass('expanded'),
-        close: () => $('html').removeClass('expanded'),
+        open: () => $('html').addClass('suggestions'),
+        close: () => $('html').removeClass('suggestions'),
         select: () => searchBySearchQuery(windowId)
     });
 
@@ -57,7 +57,7 @@ const fetchSuggestions = async (searchTerm) => {
         const suggestions = rawData
             .filter(item => Array.isArray(item) && item[0])
             .map(item => item[0])
-            .filter(s => s.length < 30); // filter out long ones directly
+            .slice(0, 5);
 
         return suggestions;
     } catch (err) {
